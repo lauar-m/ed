@@ -3,7 +3,7 @@ CFLAGS = -Wall -Iinclude
 SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
-EXEC = $(BINDIR)/ed
+EXEC = $(BINDIR)/matop
 
 SRC = $(SRCDIR)/mat.c $(SRCDIR)/matop.c
 
