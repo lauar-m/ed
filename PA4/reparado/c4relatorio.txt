@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+-  Aponta um uso de valor não inicializado e uma escrita inválida no código. O problema ocorre porque você está tentando acessar e modificar a estrutura rotation3D sem alocá-la primeiro.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

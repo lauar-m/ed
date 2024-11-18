@@ -1,0 +1,7 @@
+Analisando o código e utilizando as ferramentas
+- Aponta problemas incluem o uso de valores não inicializados (line) e buf nao foi alocado
+
+Analisando o código correto e utilizando as ferramentas
+- [Inferior 1 (process 70604) exited normally]
+No stack.
+- No arquivo cxxcorreto-valgrind.log

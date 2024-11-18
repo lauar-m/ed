@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- Aponta vazamento de memória, pois aloca memória para array mas não libera ela antes do programa terminar.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

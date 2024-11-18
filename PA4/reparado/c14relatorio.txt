@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- Aponta uso de valor nao inicializado, pois a variável fact não é inicializada antes.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- Aponta escrita inválida e vazamento de memória, porque tenta acessar o indice 10 numa array que so tem 9.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

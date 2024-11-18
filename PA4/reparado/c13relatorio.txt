@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- Aponta vazamento de memória, pois o código aloca memória várias vezes para o ponteiro sem liberar memória antes.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

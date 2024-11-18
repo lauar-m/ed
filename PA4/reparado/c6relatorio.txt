@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- Aponta erro na memória,  pois o código realoca memória dentro da função mas não atualiza o ponteiro.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

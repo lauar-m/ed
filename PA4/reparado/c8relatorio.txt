@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- Aponta leitura inválida, pois o código tenta acessar um indice fora do limite do array.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

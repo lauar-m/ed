@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- Aponta escrita e leitura inválida, pois o código tenta copiar um string mais que o o espaço que está alocado pra ela.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

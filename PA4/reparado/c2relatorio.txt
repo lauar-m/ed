@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- Aponta uso de valor não inicializado no código, pois está acessando o elemnto a[9] do arrya sem te inicializado
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

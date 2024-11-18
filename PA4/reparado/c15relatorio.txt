@@ -1,0 +1,4 @@
+Analisando o código e utilizando as ferramentas
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

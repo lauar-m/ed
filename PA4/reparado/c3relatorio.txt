@@ -1,0 +1,6 @@
+Analisando o código e utilizando as ferramentas
+- Aponta vazamento de memória porque você está alocando memória dentro de um loop, mas só está liberando a última alocação
+
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log

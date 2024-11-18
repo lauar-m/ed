@@ -1,0 +1,5 @@
+Analisando o código e utilizando as ferramentas
+- O erro ocorre porque o código está tentando escrever 4 bytes além do final de um bloco de memória alocado.
+
+Analisando o código correto e utilizando as ferramentas
+- No arquivo cxxcorreto-valgrind.log
