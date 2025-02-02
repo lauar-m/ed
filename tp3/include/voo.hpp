@@ -24,6 +24,9 @@ private:
     std::string horaChegada;
     int paradas;
     int duracao;
+
+    // Função auxiliar para converter data-hora em segundos
+    int converterParaSegundos(const std::string& datetime);
 };
 
-#endif
+#endif // VOO_H

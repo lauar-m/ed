@@ -1,74 +1,155 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <ctime>
+#include <stdexcept>
 #include "voo.hpp"
 #include "consulta.hpp"
-#include "index.hpp"
 #include "listaEncad.hpp"
-
-// Função para converter data-hora em segundos
-int convertToSeconds(const std::string& datetime) {
-    struct tm tm = {};
-    strptime(datetime.c_str(), "%Y-%m-%dT%H:%M:%S", &tm);
-    return mktime(&tm);
-}
+#include "noArvoreB.hpp"
+#include "arvoreB.hpp"
 
 // Função para dividir uma string em dados
-std::string* split(const std::string& linha, char delimiter, int& count) {
-    count = 0;
-    for (char ch : linha) {
-        if (ch == delimiter) count++;
-    }
-    count++;
-    std::string* dados = new std::string[count];
+ListaEncad<std::string> *split(const std::string &linha, char delimiter)
+{
+    ListaEncad<std::string> *dados = new ListaEncad<std::string>();
     std::istringstream dadostream(linha);
-    std::string token;
-    int i = 0;
-    while (std::getline(dadostream, token, delimiter)) {
-        dados[i++] = token;
+    std::string dado;
+
+    while (std::getline(dadostream, dado, delimiter))
+    {
+        dados->adiciona(new std::string(dado));
     }
     return dados;
 }
 
+// Função para converter string para inteiro
+int safe_stoi(const std::string &str)
+{
+    try
+    {
+        return std::stoi(str);
+    }
+    catch (const std::invalid_argument &e)
+    {
+        std::cerr << "Erro ao converter string para inteiro (inválido): " << str << std::endl;
+        return -1; // Retorna -1 em caso de erro
+    }
+    catch (const std::out_of_range &e)
+    {
+        std::cerr << "Erro ao converter string para inteiro (fora do intervalo): " << str << std::endl;
+        return -1;
+    }
+}
+
 // Função para carregar os dados do CSV
-void carregarCsv(const std::string& nomeArquivo, ListaEncad<Voo>* voos, ListaEncad<Consulta>* consultas) {
+void carregarCsv(const std::string &nomeArquivo, ListaEncad<Voo> *voos, ListaEncad<Consulta> *consultas)
+{
     std::ifstream arquivo(nomeArquivo);
+    if (!arquivo.is_open())
+    {
+        std::cerr << "Erro ao abrir o arquivo: " << nomeArquivo << std::endl;
+        return;
+    }
+
     std::string linha;
 
     // Ler a primeira linha (número de voos)
-    std::getline(arquivo, linha);
-    int numVoos = std::stoi(linha);
-
-    // Ler os voos
-    for (int i = 0; i < numVoos; i++) {
-        std::getline(arquivo, linha);
-        int count;
-        std::string* dados = split(linha, ' ', count);
-        Voo* voo = new Voo(dados[0], dados[1], std::stod(dados[2]), std::stoi(dados[3]), dados[4], dados[5], std::stoi(dados[6]));
-        voos->adiciona(voo);
-        delete[] dados;
+    if (!std::getline(arquivo, linha))
+    {
+        std::cerr << "Erro ao ler o número de voos." << std::endl;
+        return;
     }
 
-    // Ler a próxima linha (número de consultas)
-    std::getline(arquivo, linha);
-    int numConsultas = std::stoi(linha);
+    int numVoos = safe_stoi(linha);
+    if (numVoos < 0)
+        return;
+
+    // Ler os voos
+    for (int i = 0; i < numVoos; i++)
+    {
+        if (!std::getline(arquivo, linha))
+        {
+            std::cerr << "Erro ao ler a linha do voo " << i + 1 << std::endl;
+            return;
+        }
+
+        std::istringstream iss(linha);
+        std::string org, dst, dep, arr;
+        double prc;
+        int sea, sto;
+
+        if (!(iss >> org >> dst >> prc >> sea >> dep >> arr >> sto))
+        {
+            std::cerr << "Erro ao ler os dados do voo na linha " << i + 2 << std::endl;
+            continue;
+        }
+
+        try
+        {
+            Voo *voo = new Voo(org, dst, prc, sea, dep, arr, sto);
+            voos->adiciona(voo);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Erro ao criar voo: " << e.what() << std::endl;
+        }
+    }
+
+    // Ler o número de consultas
+    if (!std::getline(arquivo, linha))
+    {
+        std::cerr << "Erro ao ler o número de consultas." << std::endl;
+        return;
+    }
+
+    int numConsultas = safe_stoi(linha);
+    if (numConsultas < 0)
+        return;
 
     // Ler as consultas
-    for (int i = 0; i < numConsultas; i++) {
-        std::getline(arquivo, linha);
-        int count;
-        std::string* dados = split(linha, ' ', count);
-        Consulta* consulta = new Consulta(std::stoi(dados[0]), dados[1], dados[2]);
-        consultas->adiciona(consulta);
-        delete[] dados;
+    for (int i = 0; i < numConsultas; i++)
+    {
+        if (!std::getline(arquivo, linha))
+        {
+            std::cerr << "Erro ao ler a linha da consulta " << i + 1 << std::endl;
+            return;
+        }
+
+        std::istringstream issConsulta(linha);
+        int maxVoos;
+        std::string order;
+        std::string expression;
+
+        // Ler os dois primeiros campos (maxVoos e order)
+        if (!(issConsulta >> maxVoos >> order))
+        {
+            std::cerr << "Erro ao ler os dados da consulta na linha " << i + 2 << std::endl;
+            continue;
+        }
+
+        // O restante da linha será a expressão (incluindo espaços)
+        std::getline(issConsulta, expression);
+        // Remover espaços em branco iniciais da expressão, se houver
+        expression.erase(0, expression.find_first_not_of(" \t"));
+
+        try
+        {
+            Consulta *consulta = new Consulta(maxVoos, order, expression);
+            consultas->adicionaFila(consulta);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Erro ao criar consulta: " << e.what() << std::endl;
+        }
     }
 }
 
 // Função para imprimir a saída
-void imprimirSaida(ListaEncad<Voo>* voos) {
-    for (int i = 0; i < voos->tamanho(); i++) {
-        Voo* voo = voos->get(i);
+void imprimirSaida(ListaEncad<Voo> *voos, int maxVoos)
+{
+    for (int i = 0; i < maxVoos; i++)
+    {
+        Voo *voo = voos->get(i);
         std::cout << voo->getOrigem() << " "
                   << voo->getDestino() << " "
                   << voo->getPreco() << " "
@@ -79,31 +160,38 @@ void imprimirSaida(ListaEncad<Voo>* voos) {
     }
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
         std::cerr << "Uso: " << argv[0] << " <arquivo.csv>" << std::endl;
         return 1;
     }
+
     std::string nomeArquivo = argv[1];
-    ListaEncad<Voo>* voos = new ListaEncad<Voo>();
-    ListaEncad<Consulta>* consultas = new ListaEncad<Consulta>();
+    ListaEncad<Voo> *voos = new ListaEncad<Voo>(); // Inicializa a lista de voos
+    ListaEncad<Consulta> *consultas = new ListaEncad<Consulta>(); // Inicializa a lista de consultas 
 
     // Carregar os dados do CSV
     carregarCsv(nomeArquivo, voos, consultas);
 
-    Index index;
-    for (int i = 0; i < voos->tamanho(); i++) {
-        index.addVoo(voos->get(i));
-    }
+    for (int i = 0; i < consultas->tamanho(); i++)
+    {
+        ListaEncad<Voo>* voosDaVez = new ListaEncad<Voo>();
+        for (int i = 0; i < voos->tamanho(); i++)
+        {
+            Voo *voo = new Voo(voos->get(i)->getOrigem(), voos->get(i)->getDestino(), voos->get(i)->getPreco(), voos->get(i)->getAssentosDisp(), voos->get(i)->getHoraPartida(), voos->get(i)->getHoraChegada(), voos->get(i)->getParadas());
+            voosDaVez->adiciona(voo);
+        }
 
-    for (int i = 0; i < consultas->tamanho(); i++) {
-        Consulta* consulta = consultas->get(i);
+        Consulta *consulta = consultas->get(i);
 
         // Aplicar a filtragem
-        ListaEncad<Voo>* voosFiltrados = consulta->evaluate(voos);
-
+        ListaEncad<Voo> *voosFiltrados = consulta->evaluate(voosDaVez);
+        
         // Verificar se a lista filtrada não está vazia
-        if (voosFiltrados->tamanho() == 0) {
+        if (voosFiltrados->tamanho() == 0)
+        {
             std::cout << "Nenhum voo encontrado para a consulta: "
                       << consulta->getMaxVoos() << " "
                       << consulta->getOrder() << " "
@@ -113,10 +201,11 @@ int main(int argc, char* argv[]) {
         }
 
         // Aplicar a ordenação
-        ListaEncad<Voo>* voosOrdenados = consulta->sortVoos(voosFiltrados);
+        ListaEncad<Voo> *voosOrdenados = consulta->sortVoos(voosFiltrados);
 
         // Verificar se a lista ordenada não está vazia
-        if (voosOrdenados->tamanho() == 0) {
+        if (voosOrdenados->tamanho() == 0)
+        {
             std::cout << "Erro ao ordenar os voos para a consulta: "
                       << consulta->getMaxVoos() << " "
                       << consulta->getOrder() << " "
@@ -125,17 +214,12 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        // Imprimir a saída
+        // // Imprimir a saída
         std::cout << consulta->getMaxVoos() << " "
                   << consulta->getOrder() << " "
                   << consulta->getExpression() << std::endl;
-        imprimirSaida(voosOrdenados);
-
-        // Liberar memória
-        delete voosFiltrados;
-        delete voosOrdenados;
+        imprimirSaida(voosOrdenados, consulta->getMaxVoos());
     }
-
     // Liberar memória
     delete voos;
     delete consultas;
